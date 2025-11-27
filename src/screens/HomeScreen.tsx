@@ -277,7 +277,7 @@ function FeaturedMatchCard({ match, onPress }: { match: Match; onPress: () => vo
 
           <View style={styles.scoreCol}>
             <Text style={styles.featuredScore}>
-              {match.status === 'scheduled' ? 'VS' : `${match.homeScore} - ${match.awayScore}`}
+              {match.homeScore === null ? 'VS' : `${match.homeScore} - ${match.awayScore}`}
             </Text>
           </View>
 
@@ -323,7 +323,7 @@ function CompactMatchCard({ match, onPress }: { match: Match; onPress: () => voi
               </Text>
             </View>
             <Text style={[styles.scoreSmall, isLive && styles.scoreLive]}>
-              {match.status === 'scheduled' ? '-' : match.homeScore}
+              {match.homeScore === null ? '-' : match.homeScore}
             </Text>
           </View>
           <View style={styles.teamRow}>
@@ -336,7 +336,7 @@ function CompactMatchCard({ match, onPress }: { match: Match; onPress: () => voi
               </Text>
             </View>
             <Text style={[styles.scoreSmall, isLive && styles.scoreLive]}>
-              {match.status === 'scheduled' ? '-' : match.awayScore}
+              {match.awayScore === null ? '-' : match.awayScore}
             </Text>
           </View>
         </View>
