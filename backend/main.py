@@ -61,11 +61,11 @@ app.add_middleware(
 app.include_router(api_router, prefix="/api/v1")
 
 
-@app.get("/")
+@app.api_route("/", methods=["GET", "HEAD"])
 async def root():
     return {"message": "ScoreFlow API", "version": "1.0.0"}
 
 
-@app.get("/health")
+@app.api_route("/health", methods=["GET", "HEAD"])
 async def health_check():
     return {"status": "healthy"}
