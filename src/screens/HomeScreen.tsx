@@ -151,10 +151,11 @@ export default function HomeScreen() {
 
       {/* Header */}
       <View style={styles.header}>
-        <View>
-          <Text style={styles.greeting}>Football Hub</Text>
-          <Text style={styles.appName}>ScoreFlow</Text>
-        </View>
+        <Image
+          source={require('../../assets/logo-scoreflow.png')}
+          style={styles.logo}
+          resizeMode="contain"
+        />
         <TouchableOpacity style={styles.iconButton}>
           <IconButton icon="bell-outline" iconColor="#fff" size={24} />
           <Badge size={8} style={styles.badge} visible={true} />
@@ -354,18 +355,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingTop: Platform.OS === 'android' ? 40 : 60,
-    paddingBottom: 20,
+    paddingTop: Platform.OS === 'android' ? 10 : 20, // Reduced padding
+    paddingBottom: 10,
   },
-  greeting: {
-    color: '#94A3B8',
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  appName: {
-    color: '#fff',
-    fontSize: 24,
-    fontWeight: 'bold',
+  logo: {
+    width: 200, // Increased size
+    height: 60,
   },
   iconButton: {
     position: 'relative',
