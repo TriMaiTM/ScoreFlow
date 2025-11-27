@@ -1,5 +1,6 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosError } from 'axios';
 import * as SecureStore from 'expo-secure-store';
+import { Platform } from 'react-native';
 
 // TODO: Thay YOUR_IP bằng IP máy của bạn (chạy: ipconfig)
 // Ví dụ: 'http://192.168.1.100:8000/api/v1'
@@ -26,12 +27,19 @@ class ApiClient {
     this.client.interceptors.request.use(
       async (config) => {
         try {
-          const token = await SecureStore.getItemAsync('auth_token');
+          let token: string | null = null;
+          if (Platform.OS !== 'web') {
+            token = await SecureStore.getItemAsync('auth_token');
+          } else {
+            // On web, we can use localStorage or just skip for now
+            token = typeof localStorage !== 'undefined' ? localStorage.getItem('auth_token') : null;
+          }
+
           if (token) {
             config.headers.Authorization = `Bearer ${token}`;
           }
         } catch (error) {
-          console.log('No token found or SecureStore error:', error);
+          console.log('Error getting token:', error);
         }
         return config;
       },
@@ -45,7 +53,11 @@ class ApiClient {
         if (error.response?.status === 401) {
           // Token expired, logout user
           try {
-            await SecureStore.deleteItemAsync('auth_token');
+            if (Platform.OS !== 'web') {
+              await SecureStore.deleteItemAsync('auth_token');
+            } else {
+              if (typeof localStorage !== 'undefined') localStorage.removeItem('auth_token');
+            }
           } catch (err) {
             console.log('Error deleting token:', err);
           }
