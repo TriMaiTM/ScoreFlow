@@ -32,7 +32,13 @@ class Settings(BaseSettings):
     ENABLE_SCHEDULER: bool = True  # Set to False to disable auto-updates
     
     # CORS
-    CORS_ORIGINS: List[str] = ["http://localhost:8081"]
+    CORS_ORIGINS: List[str] = [
+        "http://localhost:8081",
+        "http://localhost:19000",
+        "http://localhost:19006",
+        "http://127.0.0.1:8081",
+        "*"
+    ]
     
     class Config:
         env_file = ".env"

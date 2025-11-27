@@ -11,8 +11,10 @@ Vì Render reset ổ cứng sau mỗi lần deploy, bạn **KHÔNG THỂ** dùng
 4.  Chờ vài phút để Project khởi tạo xong.
 5.  Vào mục **Project Settings** (biểu tượng bánh răng) -> **Database**.
 6.  Kéo xuống phần **Connection String**, chọn tab **URI**.
-7.  Copy chuỗi kết nối (nó sẽ giống thế này: `postgresql://postgres.xxxx:[YOUR-PASSWORD]@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres`).
-8.  **QUAN TRỌNG**: Thay thế `[YOUR-PASSWORD]` trong chuỗi đó bằng mật khẩu bạn đã đặt ở bước 3.
+7.  **QUAN TRỌNG**: Bỏ chọn ô **"Use connection pooling"** (để lấy port 5432) nếu kết nối bị lỗi `Network is unreachable`.
+    *   Link thường có dạng: `postgresql://postgres.xxxx:[YOUR-PASSWORD]@aws-0-ap-southeast-1.pooler.supabase.com:5432/postgres`
+8.  Copy chuỗi kết nối đó.
+9.  Thay thế `[YOUR-PASSWORD]` bằng mật khẩu thật của bạn.
 
 ## Bước 2: Cấu hình Render
 1.  Đẩy code lên GitHub (nếu chưa).
@@ -37,7 +39,7 @@ Vì Render reset ổ cứng sau mỗi lần deploy, bạn **KHÔNG THỂ** dùng
 Kéo xuống phần **Environment Variables**, nhấn **Add Environment Variable** và thêm các biến sau (lấy từ file `.env` của bạn):
 
 | Key | Value |
-| :--- | :--- |
+| :--- | :--- | 
 | `DATABASE_URL` | *(Dán link PostgreSQL từ Bước 1 vào đây)* |
 | `DATABASE_URL_ASYNC` | *(Dán link PostgreSQL từ Bước 1 vào đây)* |
 | `FOOTBALL_API_KEY` | *(API Key của bạn)* |
@@ -64,4 +66,12 @@ Render có tính năng **Shell** (Console) ngay trên web.
 3.  Đợi nó chạy xong là App của bạn có dữ liệu!
 
 ---
-**Chúc mừng! Backend của bạn giờ đã chạy 24/7 và tự động cập nhật dữ liệu!** 🎉
+## ⚠️ Xử lý lỗi thường gặp
+
+### Lỗi `Network is unreachable` hoặc `Connection refused`
+Lỗi này thường do Supabase chặn kết nối hoặc sai Port.
+1.  Vào Supabase -> Project Settings -> Database.
+2.  Bỏ tick **"Use connection pooling"**.
+3.  Copy lại Connection String (lúc này Port sẽ là **5432** thay vì 6543).
+4.  Cập nhật lại biến `DATABASE_URL` và `DATABASE_URL_ASYNC` trên Render.
+5.  Redeploy lại.

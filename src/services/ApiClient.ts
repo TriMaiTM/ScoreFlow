@@ -3,7 +3,7 @@ import * as SecureStore from 'expo-secure-store';
 
 // TODO: Thay YOUR_IP bằng IP máy của bạn (chạy: ipconfig)
 // Ví dụ: 'http://192.168.1.100:8000/api/v1'
-const API_BASE_URL = 'http://192.168.1.6:8000/api/v1';
+const API_BASE_URL = 'https://scoreflow-backend-5wu8.onrender.com/api/v1';
 const API_TIMEOUT = 30000;
 
 class ApiClient {
