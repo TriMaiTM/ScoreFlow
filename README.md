@@ -2,7 +2,7 @@
 
 Ứng dụng di động React Native để theo dõi lịch thi đấu bóng đá, dự đoán kết quả bằng AI, và nhận thông báo real-time.
 
-## 🚀 Tech Stack
+## Tech Stack
 
 ### Frontend (Mobile App)
 - **Framework**: React Native + TypeScript với Expo
@@ -20,7 +20,7 @@
 - **Authentication**: JWT (python-jose)
 - **ML Models**: scikit-learn, XGBoost, LightGBM
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 ScoreFlow/
@@ -41,7 +41,7 @@ ScoreFlow/
 └── App.tsx               # Root component
 ```
 
-## 🛠️ Setup & Installation
+## Setup & Installation
 
 ### Frontend Setup
 
@@ -101,30 +101,30 @@ uvicorn main:app --reload --port 8000
 API sẽ chạy tại: `http://localhost:8000`  
 API Docs: `http://localhost:8000/docs`
 
-## 🔑 Features
+## Features
 
-### ✅ Implemented
-- 📱 Cross-platform mobile app (iOS/Android)
-- 🔐 User authentication (JWT)
-- ⚽ Match listings (upcoming, live, finished)
-- 📊 League standings
-- 🔔 Push notifications setup
-- 💾 Offline-first caching
-- 🌓 Dark/Light theme
-- 📱 Responsive UI with React Native Paper
+### Implemented
+- Cross-platform mobile app (iOS/Android)
+- User authentication (JWT)
+- Match listings (upcoming, live, finished)
+- League standings
+- Push notifications setup
+- Offline-first caching
+- Dark/Light theme
+- Responsive UI with React Native Paper
 
-### 🚧 TODO / In Progress
-- 🤖 ML prediction model training & serving
-- 📈 Team statistics & head-to-head
-- 🔄 Real-time match updates (webhooks)
-- 🔍 Advanced search & filters
-- ⭐ Favorite teams/matches
-- 📅 Calendar integration
-- 🧪 Unit & E2E tests
-- 🐳 Docker deployment
-- 🚀 CI/CD pipeline
+### TODO / In Progress
+- ML prediction model training & serving
+- Team statistics & head-to-head
+- Real-time match updates (webhooks)
+- Advanced search & filters
+- Favorite teams/matches
+- Calendar integration
+- Unit & E2E tests
+- Docker deployment
+- CI/CD pipeline
 
-## 📊 ML Prediction Pipeline
+## ML Prediction Pipeline
 
 The prediction module uses:
 - **Features**: Elo ratings, form (last 5 matches), goals avg, H2H stats, home/away advantage, days since last match, injuries
@@ -132,7 +132,7 @@ The prediction module uses:
 - **Training**: Batch training on historical match data
 - **Serving**: FastAPI endpoint with cached predictions
 
-## 🔒 Security
+## Security
 
 - JWT tokens stored in Expo SecureStore
 - Password hashing with bcrypt
@@ -140,7 +140,7 @@ The prediction module uses:
 - CORS configuration
 - Environment variables for secrets
 
-## 📝 API Endpoints
+## API Endpoints
 
 ```
 POST   /api/v1/auth/register       - User registration
@@ -155,7 +155,7 @@ GET    /api/v1/teams/{id}          - Get team details
 GET    /api/v1/teams/{id}/stats    - Get team statistics
 ```
 
-## 🧪 Testing
+## Testing
 
 ```bash
 # Frontend tests
@@ -166,7 +166,7 @@ cd backend
 pytest
 ```
 
-## 📦 Build & Deploy
+## Build & Deploy
 
 ### Frontend
 ```bash
@@ -184,29 +184,5 @@ docker build -t scoreflow-api ./backend
 docker run -p 8000:8000 scoreflow-api
 ```
 
-## 🤝 Contributing
 
-1. Fork the repository
-2. Create feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit changes (`git commit -m 'Add AmazingFeature'`)
-4. Push to branch (`git push origin feature/AmazingFeature`)
-5. Open Pull Request
 
-## 📄 License
-
-MIT License - see LICENSE file for details
-
-## 👥 Author
-
-ScoreFlow - Football Match Prediction & Tracking App
-
----
-
-**Note**: Đây là dự án học tập/demo. Để production, cần thêm:
-- Rate limiting & security hardening
-- Comprehensive error handling
-- Monitoring & logging (Sentry, DataDog)
-- Database migrations (Alembic)
-- Automated tests & CI/CD
-- Performance optimization
-- API versioning strategy
