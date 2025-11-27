@@ -13,3 +13,4 @@ httpx==0.26.0
 alembic==1.13.1
 celery==5.3.6
 apscheduler==3.10.4
+psycopg2-binary==2.9.9

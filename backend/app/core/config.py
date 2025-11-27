@@ -1,4 +1,5 @@
 from pydantic_settings import BaseSettings
+from pydantic import field_validator
 from typing import List
 
 
@@ -36,6 +37,16 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
         case_sensitive = True
+
+    @field_validator("DATABASE_URL_ASYNC")
+    @classmethod
+    def assemble_async_db_connection(cls, v: str | None) -> str:
+        if v:
+            if v.startswith("postgres://"):
+                return v.replace("postgres://", "postgresql+asyncpg://", 1)
+            if v.startswith("postgresql://"):
+                return v.replace("postgresql://", "postgresql+asyncpg://", 1)
+        return v
 
 
 settings = Settings()
