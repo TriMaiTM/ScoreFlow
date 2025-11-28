@@ -69,9 +69,9 @@ async def sync_realtime_scores_job():
         async with AsyncSessionLocal() as db:
             service = DataSyncService(db)
             
-            # Sync today and tomorrow for real-time updates
+            # Sync yesterday, today, and tomorrow to catch all recent/ongoing matches
             today = date.today()
-            date_from = today.strftime("%Y-%m-%d")
+            date_from = (today - timedelta(days=1)).strftime("%Y-%m-%d")
             date_to = (today + timedelta(days=1)).strftime("%Y-%m-%d")
             
             # Top 5 leagues

@@ -293,20 +293,35 @@ class DataSyncService:
         )
         live_matches = result.scalars().all()
         
-        updated_count = 0
-        
-        for match in live_matches:
-            # Fetch updated data from API
-            matches_data = await self.api_client.get_matches()
+        if not live_matches:
+            return 0
             
-            for match_data in matches_data:
-                if match_data["id"] == match.external_id:
-                    # Update scores
-                    match.home_score = match_data["score"]["fullTime"]["home"]
-                    match.away_score = match_data["score"]["fullTime"]["away"]
-                    match.status = self._map_status(match_data["status"])
-                    updated_count += 1
-                    break
+        # Get unique leagues from live matches
+        league_ids = set(match.league.external_id for match in live_matches if match.league)
+        
+        updated_count = 0
+        today = datetime.now().strftime("%Y-%m-%d")
+        
+        for league_id in league_ids:
+            try:
+                # Fetch today's matches for this league
+                matches_data = await self.api_client.get_matches(
+                    competition_id=league_id,
+                    date_from=today,
+                    date_to=today
+                )
+                
+                for match_data in matches_data:
+                    # Find corresponding match in DB
+                    match = next((m for m in live_matches if m.external_id == match_data["id"]), None)
+                    if match:
+                        # Update scores and status
+                        match.home_score = match_data["score"]["fullTime"]["home"]
+                        match.away_score = match_data["score"]["fullTime"]["away"]
+                        match.status = self._map_status(match_data["status"])
+                        updated_count += 1
+            except Exception as e:
+                print(f"⚠️ Error updating live matches for league {league_id}: {e}")
         
         await self.db.commit()
         return updated_count
