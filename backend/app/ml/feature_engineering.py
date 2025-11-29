@@ -180,7 +180,7 @@ class FeatureEngineer:
         away_days = await self.get_days_since_last_match(match.away_team_id)
         
         # Return 12 features (no odds for production)
-        return {
+        features = {
             "home_elo": home_elo,
             "away_elo": away_elo,
             "elo_diff": home_elo - away_elo,
@@ -194,6 +194,15 @@ class FeatureEngineer:
             "away_rest_days": away_days,
             "elo_diff_abs": abs(home_elo - away_elo),
         }
+        
+        # Debug logging
+        print(f"🔍 Features for match {match_id}:")
+        print(f"  Elo: {home_elo:.0f} vs {away_elo:.0f} (diff: {home_elo - away_elo:.0f})")
+        print(f"  Form: {home_form:.2f} vs {away_form:.2f}")
+        print(f"  Goals: {home_goals_avg:.2f} vs {away_goals_avg:.2f}")
+        print(f"  Conceded: {home_conceded_avg:.2f} vs {away_conceded_avg:.2f}")
+        
+        return features
     
     def features_to_array(self, features: Dict) -> np.ndarray:
         """Convert features dict to numpy array"""
