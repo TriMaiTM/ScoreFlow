@@ -38,7 +38,7 @@ wheels/
 
 # --- Backend Specific ---
 backend/.env
-backend/models/*.pkl
+# backend/models/*.pkl
 backend/models/*.joblib
 backend/celerybeat-schedule
 
