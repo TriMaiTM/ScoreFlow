@@ -9,7 +9,8 @@ engine = create_async_engine(
     future=True,
     pool_pre_ping=True,  # Tự động kiểm tra kết nối sống/chết trước khi dùng
     connect_args={
-        "statement_cache_size": 0
+        "statement_cache_size": 0,
+        "ssl": "require"
     }
 )
 
