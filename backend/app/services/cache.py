@@ -22,8 +22,10 @@ class RedisCache:
                 socket_connect_timeout=2,  # Short timeout to fail fast
                 socket_timeout=2
             )
-            # Test connection
-            await self.redis_client.ping()
+            # Test connection with explicit timeout
+            import asyncio
+            async with asyncio.timeout(3):
+                await self.redis_client.ping()
             print("✅ Connected to Redis")
         except Exception as e:
             print(f"⚠️ Redis connection failed: {e}. Caching disabled.")
