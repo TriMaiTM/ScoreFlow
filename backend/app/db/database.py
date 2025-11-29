@@ -1,5 +1,6 @@
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import declarative_base
+from sqlalchemy.pool import NullPool
 
 from app.core.config import settings
 
@@ -7,7 +8,7 @@ engine = create_async_engine(
     settings.DATABASE_URL_ASYNC,
     echo=True,
     future=True,
-    pool_pre_ping=True,  # Tự động kiểm tra kết nối sống/chết trước khi dùng
+    poolclass=NullPool,
     connect_args={
         "statement_cache_size": 0,
         "ssl": "require"
