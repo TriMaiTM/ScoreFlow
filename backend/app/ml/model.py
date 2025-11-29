@@ -141,13 +141,19 @@ class PredictionModel:
     
     def predict_score(self, features: np.ndarray) -> Tuple[int, int]:
         """Predict match score"""
-        # Simple approach: use goals averages
-        home_goals_avg = features[0, 6]
-        away_goals_avg = features[0, 7]
+        # Feature order (12 features): home_elo, away_elo, elo_diff, home_form, away_form, 
+        # home_goals_avg, away_goals_avg, home_conceded, away_conceded, home_rest, away_rest, elo_diff_abs
+        
+        home_goals_avg = features[0, 5]  # Index 5 (was 6)
+        away_goals_avg = features[0, 6]  # Index 6 (was 7)
         
         # Adjust based on form and Elo
-        form_diff = features[0, 5]
+        home_form = features[0, 3]  # Index 3 (was 4)
+        away_form = features[0, 4]  # Index 4 (was 5)
         elo_diff = features[0, 2]
+        
+        # Form difference
+        form_diff = home_form - away_form
         
         home_adjustment = (form_diff + elo_diff / 1000) * 0.5
         away_adjustment = -(form_diff + elo_diff / 1000) * 0.5
@@ -201,11 +207,11 @@ class PredictionModel:
 
     def generate_explanation(self, home_team: str, away_team: str, home_prob: float, away_prob: float, features: list) -> str:
         """Generate a natural language explanation for the prediction"""
-        # Features: [HomeElo, AwayElo, EloDiff, HomeFormPts, AwayFormPts, HomeGS, AwayGS, HomeGC, AwayGC, HomeRest, AwayRest, ...]
+        # Feature order (12 features): [HomeElo, AwayElo, EloDiff, HomeForm, AwayForm, HomeGS, AwayGS, HomeGC, AwayGC, HomeRest, AwayRest, EloDiffAbs]
         
         elo_diff = features[2]
-        home_form = features[3]
-        away_form = features[4]
+        home_form = features[3]  # Index 3 (was 3, still correct)
+        away_form = features[4]  # Index 4 (was 4, still correct)
         
         explanation = []
         
