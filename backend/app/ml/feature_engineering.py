@@ -42,7 +42,7 @@ class FeatureEngineer:
             select(Match)
             .where(
                 ((Match.home_team_id == team_id) | (Match.away_team_id == team_id)),
-                Match.status == "finished"
+                Match.status.in_(["finished", "FINISHED"])  # Handle both cases
             )
             .order_by(Match.match_date.desc())
             .limit(last_n)
@@ -74,7 +74,7 @@ class FeatureEngineer:
             select(Match)
             .where(
                 ((Match.home_team_id == team_id) | (Match.away_team_id == team_id)),
-                Match.status == "finished"
+                Match.status.in_(["finished", "FINISHED"])  # Handle both cases
             )
             .order_by(Match.match_date.desc())
             .limit(last_n)
