@@ -82,6 +82,7 @@ export interface Prediction {
     away: number;
   };
   confidence: number; // 0-1
+  explanation?: string;
   features: PredictionFeatures;
 }
 

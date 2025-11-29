@@ -226,6 +226,13 @@ export default function MatchDetailScreen() {
                   </Text>
                 </View>
               </View>
+
+              {prediction.explanation && (
+                <View style={styles.explanationContainer}>
+                  <Text style={styles.explanationTitle}>Analysis</Text>
+                  <Text style={styles.explanationText}>{prediction.explanation}</Text>
+                </View>
+              )}
             </View>
           </Surface>
         )}
@@ -552,6 +559,25 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     textAlign: 'center',
+  },
+  explanationContainer: {
+    marginTop: 20,
+    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+    padding: 12,
+    borderRadius: 8,
+    borderLeftWidth: 4,
+    borderLeftColor: '#3B82F6',
+  },
+  explanationTitle: {
+    color: '#3B82F6',
+    fontSize: 14,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  explanationText: {
+    color: '#CBD5E1',
+    fontSize: 14,
+    lineHeight: 20,
   },
   formContainer: {
     flexDirection: 'row',

@@ -416,33 +416,39 @@ async def get_match_by_id(match_id: int, db: AsyncSession = Depends(get_db)):
 
 @router.get("/{match_id}/prediction", response_model=ApiResponse)
 async def get_match_prediction(match_id: int, db: AsyncSession = Depends(get_db)):
-    # TODO: Get prediction from ML service
-    # For now, return dummy data with proper camelCase field names
-    return ApiResponse(
-        success=True,
-        data={
-            "matchId": match_id,
-            "homeWinProbability": 0.45,
-            "drawProbability": 0.25,
-            "awayWinProbability": 0.30,
-            "predictedScore": {"home": 2, "away": 1},
-            "confidence": 0.75,
-            "features": {
-                "homeTeamElo": 1500,
-                "awayTeamElo": 1480,
-                "homeForm": 2.1,
-                "awayForm": 1.8,
-                "homeGoalsAvg": 1.8,
-                "awayGoalsAvg": 1.5,
-                "h2hHomeWins": 3,
-                "h2hAwayWins": 2,
-                "h2hDraws": 1,
-                "isHomeMatch": True,
-                "daysSinceLastMatch": {"home": 7, "away": 5},
-                "injuredPlayers": {"home": 0, "away": 1},
-            },
-        },
+    # 1. Get Match with Teams loaded
+    query = (
+        select(Match)
+        .options(
+            selectinload(Match.home_team),
+            selectinload(Match.away_team)
+        )
+        .where(Match.id == match_id)
     )
+    result = await db.execute(query)
+    match = result.scalar_one_or_none()
+    
+    if not match:
+        return ApiResponse(success=False, message="Match not found")
+
+    # 2. Initialize Feature Engineer
+    from app.ml.feature_engineering import FeatureEngineer
+    from app.ml.model import prediction_model
+    
+    feature_engineer = FeatureEngineer(db)
+    
+    try:
+        # 3. Generate Prediction
+        prediction_data = await prediction_model.predict_match(match, feature_engineer)
+        
+        return ApiResponse(
+            success=True,
+            data=prediction_data
+        )
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return ApiResponse(success=False, message=f"Prediction failed: {str(e)}")
 
 
 @router.get("/h2h", response_model=ApiResponse)
