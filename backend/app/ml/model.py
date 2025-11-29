@@ -84,7 +84,7 @@ from pathlib import Path
 
 from app.ml.feature_engineering import FeatureEngineer
 from app.core.config import settings
-from app.schemas.matches import Match # Assuming Match schema is available here
+from app.db.models import Match
 
 
 class PredictionModel:
