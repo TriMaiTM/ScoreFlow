@@ -194,26 +194,9 @@ class CSVPipeline:
             home_rest = get_rest_days(home_id, match_date)
             away_rest = get_rest_days(away_id, match_date)
 
-            # Build Feature Vector
-            # [HomeElo, AwayElo, EloDiff, HomeFormPts, AwayFormPts, HomeGS, AwayGS, HomeGC, AwayGC, HomeRest, AwayRest, OddsH, OddsD, OddsA, EloDiffAbs]
-            # Note: Adding Odds as features for historical context if available, but be careful about leakage if not available in future.
-            # User requested "Feature Importance", so let's include Odds to see their impact, but we must handle missing odds carefully.
-            # However, for the PRODUCTION model to work without future odds, we should ideally NOT include them, OR have a fallback.
-            # The user said "nếu chỉ cần odd cho lịch sử cũng được thôi, không cần tương lai đâu". 
-            # This implies we CAN use odds for training to understand the match better, but wait, if we train with odds, we NEED odds for inference.
-            # If we don't have odds for tomorrow's match, the model will fail or perform poorly if we pass dummy values.
-            # DECISION: We will INCLUDE Odds in training to see importance as requested, BUT for the deployed model, we might need to fetch odds or use a separate model without odds.
-            # actually, let's stick to the plan: Odds-Weighted Elo (already done).
-            # User said "dùng cả odds và phong độ lịch sử để tận dụng tối đa".
-            # Let's add Odds to the feature vector for NOW to see importance, but keep in mind the inference limitation.
-            
-            h_odd = row.get('B365H', 0)
-            d_odd = row.get('B365D', 0)
-            a_odd = row.get('B365A', 0)
-            if pd.isna(h_odd): h_odd = 0
-            if pd.isna(d_odd): d_odd = 0
-            if pd.isna(a_odd): a_odd = 0
 
+            # Build Feature Vector (12 features - NO ODDS for production)
+            # [HomeElo, AwayElo, EloDiff, HomeFormPts, AwayFormPts, HomeGS, AwayGS, HomeGC, AwayGC, HomeRest, AwayRest, EloDiffAbs]
             feature_row = [
                 home_elo,
                 away_elo,
@@ -226,9 +209,6 @@ class CSVPipeline:
                 away_stats["gc_avg"],
                 home_rest,
                 away_rest,
-                h_odd, # Adding odds to see importance
-                d_odd,
-                a_odd,
                 abs(home_elo - away_elo)
             ]
             
@@ -336,7 +316,6 @@ class CSVPipeline:
             "HomeForm", "AwayForm", 
             "HomeGS", "AwayGS", "HomeGC", "AwayGC", 
             "HomeRest", "AwayRest",
-            "OddsH", "OddsD", "OddsA",
             "EloDiffAbs"
         ]
         

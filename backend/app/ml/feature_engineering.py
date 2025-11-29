@@ -165,43 +165,35 @@ class FeatureEngineer:
         home_goals_avg, home_conceded_avg = await self.get_goals_avg(match.home_team_id)
         away_goals_avg, away_conceded_avg = await self.get_goals_avg(match.away_team_id)
         
-        h2h = await self.get_h2h_stats(match.home_team_id, match.away_team_id)
-        
         home_days = await self.get_days_since_last_match(match.home_team_id)
         away_days = await self.get_days_since_last_match(match.away_team_id)
         
+        # Return 12 features (no odds for production)
         return {
-            "home_team_elo": home_elo,
-            "away_team_elo": away_elo,
+            "home_elo": home_elo,
+            "away_elo": away_elo,
             "elo_diff": home_elo - away_elo,
-            "home_form": home_form,
-            "away_form": away_form,
-            "form_diff": home_form - away_form,
+            "home_form_pts": home_form,
+            "away_form_pts": away_form,
             "home_goals_avg": home_goals_avg,
             "away_goals_avg": away_goals_avg,
             "home_conceded_avg": home_conceded_avg,
             "away_conceded_avg": away_conceded_avg,
-            "h2h_home_wins": h2h["home_wins"],
-            "h2h_draws": h2h["draws"],
-            "h2h_away_wins": h2h["away_wins"],
-            "is_home_match": 1.0,  # Always 1 for prediction
-            "days_since_last_match_home": home_days,
-            "days_since_last_match_away": away_days,
-            "injured_players_home": 0,  # TODO: Add injury data
-            "injured_players_away": 0,
+            "home_rest_days": home_days,
+            "away_rest_days": away_days,
+            "elo_diff_abs": abs(home_elo - away_elo),
         }
     
     def features_to_array(self, features: Dict) -> np.ndarray:
         """Convert features dict to numpy array"""
+        # Must match csv_pipeline.py feature order (12 features - no odds)
         feature_order = [
-            "home_team_elo", "away_team_elo", "elo_diff",
-            "home_form", "away_form", "form_diff",
+            "home_elo", "away_elo", "elo_diff",
+            "home_form_pts", "away_form_pts",
             "home_goals_avg", "away_goals_avg",
             "home_conceded_avg", "away_conceded_avg",
-            "h2h_home_wins", "h2h_draws", "h2h_away_wins",
-            "is_home_match",
-            "days_since_last_match_home", "days_since_last_match_away",
-            "injured_players_home", "injured_players_away"
+            "home_rest_days", "away_rest_days",
+            "elo_diff_abs"
         ]
         
         return np.array([features[key] for key in feature_order]).reshape(1, -1)

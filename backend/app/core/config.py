@@ -25,7 +25,7 @@ class Settings(BaseSettings):
     API_FOOTBALL_ENABLED: bool = False
     
     # ML Model
-    MODEL_PATH: str = "./models/prediction_model.pkl"
+    MODEL_PATH: str = "./models/prediction_model_v2.pkl"
     ENABLE_ML_PREDICTIONS: bool = True
     
     # Background Scheduler
