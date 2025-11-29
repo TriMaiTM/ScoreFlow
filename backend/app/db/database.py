@@ -5,7 +5,7 @@ from sqlalchemy.pool import NullPool
 from app.core.config import settings
 
 engine = create_async_engine(
-    settings.DATABASE_URL_ASYNC + "?prepared_statement_cache_size=0",
+    settings.DATABASE_URL_ASYNC,
     echo=False,
     future=True,
     poolclass=NullPool,

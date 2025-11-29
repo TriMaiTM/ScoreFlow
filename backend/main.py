@@ -17,9 +17,9 @@ async def lifespan(app: FastAPI):
     # Startup
     logger.info("🚀 Starting ScoreFlow API...")
     
-    # Create tables
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    # Create tables - DISABLED for Supabase Transaction Mode (tables already exist)
+    # async with engine.begin() as conn:
+    #     await conn.run_sync(Base.metadata.create_all)
     
     # Connect to Redis
     await cache.connect()
