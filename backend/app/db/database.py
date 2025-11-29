@@ -5,12 +5,19 @@ from sqlalchemy.pool import NullPool
 from app.core.config import settings
 
 engine = create_async_engine(
-    settings.DATABASE_URL_ASYNC,
-    echo=True,
+    echo=False,  # Tắt log SQL cho nhẹ
     future=True,
-    poolclass=NullPool,
+    poolclass=NullPool, # Bắt buộc dùng NullPool với Supabase Transaction Mode
+    
     connect_args={
-        "statement_cache_size": 0,
+        # 1. Cấu hình cho Server Postgres
+        "server_settings": {
+            "jit": "off",
+        },
+        
+        # 2. Cấu hình riêng cho Driver Asyncpg (PHẢI NẰM Ở ĐÂY, NGOÀI server_settings)
+        "statement_cache_size": 0,  # <--- Dòng này quan trọng nhất
+        "prepared_statement_cache_size": 0, # Thêm dòng này dự phòng cho chắc
         "ssl": "require"
     }
 )
