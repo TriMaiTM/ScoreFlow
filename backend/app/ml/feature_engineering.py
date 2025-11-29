@@ -15,7 +15,18 @@ class FeatureEngineer:
         self.db = db
     
     async def get_team_elo(self, team_id: int) -> float:
-        """Get team's Elo rating"""
+        """Get team's Elo rating from JSON file"""
+        import json
+        from pathlib import Path
+        
+        elo_file = Path("app/ml/elo_ratings.json")
+        if elo_file.exists():
+            with open(elo_file, "r") as f:
+                elo_ratings = json.load(f)
+                # Convert team_id to string key
+                return float(elo_ratings.get(str(team_id), 1500.0))
+        
+        # Fallback to database if file doesn't exist
         result = await self.db.execute(
             select(TeamStats)
             .where(TeamStats.team_id == team_id)
