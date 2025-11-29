@@ -5,6 +5,7 @@ from sqlalchemy.pool import NullPool
 from app.core.config import settings
 
 engine = create_async_engine(
+    settings.DATABASE_URL_ASYNC,
     echo=False,  # Tắt log SQL cho nhẹ
     future=True,
     poolclass=NullPool, # Bắt buộc dùng NullPool với Supabase Transaction Mode
