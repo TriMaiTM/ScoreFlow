@@ -9,7 +9,7 @@ engine = create_async_engine(
     future=True,
     pool_pre_ping=True,  # Tự động kiểm tra kết nối sống/chết trước khi dùng
     connect_args={
-        "prepare_threshold": None, # <--- QUAN TRỌNG NHẤT: Trị bệnh Timeout với Supabase
+        "statement_cache_size": 0
     }
 )
 
