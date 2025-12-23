@@ -9,13 +9,16 @@ import os
 
 # Determine if we need SSL (Render requires it)
 # Check for RENDER env var or if URL contains 'render'
-use_ssl = os.getenv("RENDER") or "render" in settings.DATABASE_URL_ASYNC
+# Also check if database host contains 'render' (common in connection strings)
+use_ssl = os.getenv("RENDER") or "render" in settings.DATABASE_URL_ASYNC or "onrender" in settings.DATABASE_URL_ASYNC
 
 connect_args = {
     "statement_cache_size": 0,
     "server_settings": {
         "jit": "off",
     },
+    "timeout": 60,          # Increase connection timeout to 60s (for Render cold starts)
+    "command_timeout": 60,  # Increase query timeout to 60s
 }
 
 if use_ssl:
