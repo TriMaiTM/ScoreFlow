@@ -20,10 +20,13 @@ connect_args = {
 
 if use_ssl:
     # Create a permissive SSL context for Render
+    print("🔒 SSL Context: ACTIVATING for Render...")
     ctx = ssl.create_default_context()
     ctx.check_hostname = False
     ctx.verify_mode = ssl.CERT_NONE
     connect_args["ssl"] = ctx
+else:
+    print("🔓 SSL Context: Disabled")
 
 engine = create_async_engine(
     settings.DATABASE_URL_ASYNC,

@@ -18,9 +18,23 @@ async def lifespan(app: FastAPI):
     # Startup
     logger.info("🚀 Starting ScoreFlow API...")
     
-    # Create tables
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    # Create tables with retry logic (for slow Render DBs)
+    import asyncio
+    max_retries = 5
+    for attempt in range(max_retries):
+        try:
+            logger.info(f"🔄 Connecting to DB (Attempt {attempt + 1}/{max_retries})...")
+            async with engine.begin() as conn:
+                await conn.run_sync(Base.metadata.create_all)
+            logger.info("✅ DB Connected & Tables Created")
+            break
+        except Exception as e:
+            logger.error(f"❌ DB Connection failed: {e}")
+            if attempt < max_retries - 1:
+                await asyncio.sleep(5)  # Wait 5s before retry
+            else:
+                logger.error("🛑 Max retries reached, giving up.")
+                raise e
     
     # Connect to Redis
     await cache.connect()
