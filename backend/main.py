@@ -58,6 +58,7 @@ app.add_middleware(
         "http://localhost:8081",
         "exp://192.168.1.3:8081",
         "http://192.168.1.3:8081",
+        "https://scoreflow-frontend.vercel.app",
         "*"
     ],  # Explicitly allow frontend
     allow_credentials=True,
