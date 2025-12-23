@@ -4,6 +4,7 @@ from sqlalchemy.pool import NullPool
 
 from app.core.config import settings
 
+import ssl
 import os
 
 # Determine if we need SSL (Render requires it)
@@ -18,7 +19,11 @@ connect_args = {
 }
 
 if use_ssl:
-    connect_args["ssl"] = "require"
+    # Create a permissive SSL context for Render
+    ctx = ssl.create_default_context()
+    ctx.check_hostname = False
+    ctx.verify_mode = ssl.CERT_NONE
+    connect_args["ssl"] = ctx
 
 engine = create_async_engine(
     settings.DATABASE_URL_ASYNC,
