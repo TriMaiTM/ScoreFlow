@@ -6,6 +6,10 @@ import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
 import { format } from 'date-fns';
 import { LinearGradient } from 'expo-linear-gradient';
 
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '../store';
+import { addFavoriteTeam, removeFavoriteTeam } from '../store/slices/userSlice';
+import { UserService } from '../services/MatchService';
 import { MatchService, TeamService } from '../services/MatchService';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { CacheService } from '../services/CacheService';
@@ -18,7 +22,34 @@ const { width } = Dimensions.get('window');
 export default function MatchDetailScreen() {
   const route = useRoute<MatchDetailRouteProp>();
   const navigation = useNavigation();
+  const dispatch = useDispatch();
+  const profile = useSelector((state: RootState) => state.user.profile);
   const { matchId } = route.params;
+
+  const handleToggleFavorite = async (teamId: number) => {
+    if (!profile) return;
+
+    const isFavorite = profile.favoriteTeams.includes(teamId);
+
+    // Optimistic Update
+    if (isFavorite) {
+      dispatch(removeFavoriteTeam(teamId));
+      try {
+        await UserService.removeFavoriteTeam(teamId);
+      } catch (e) {
+        console.error("Failed to remove favorite", e);
+        dispatch(addFavoriteTeam(teamId)); // Revert
+      }
+    } else {
+      dispatch(addFavoriteTeam(teamId));
+      try {
+        await UserService.addFavoriteTeam(teamId);
+      } catch (e) {
+        console.error("Failed to add favorite", e);
+        dispatch(removeFavoriteTeam(teamId)); // Revert
+      }
+    }
+  };
 
   const { data: matchData, isLoading: matchLoading } = useQuery({
     queryKey: ['match', matchId],
@@ -124,7 +155,7 @@ export default function MatchDetailScreen() {
       {/* Header */}
       <View style={styles.header}>
         <IconButton icon="arrow-left" iconColor="#fff" onPress={() => navigation.goBack()} />
-        <Text style={styles.headerTitle}>Match Details</Text>
+        <Text style={styles.headerTitle}>Chi tiết trận đấu</Text>
         <View style={{ width: 40 }} />
       </View>
 
@@ -146,6 +177,15 @@ export default function MatchDetailScreen() {
                   <View style={styles.logoPlaceholder}>
                     <Text style={styles.logoPlaceholderText}>{match.homeTeam.name.charAt(0)}</Text>
                   </View>
+                )}
+                {profile && (
+                  <IconButton
+                    icon={profile.favoriteTeams.includes(match.homeTeam.id) ? "heart" : "heart-outline"}
+                    iconColor={profile.favoriteTeams.includes(match.homeTeam.id) ? "#EF4444" : "#94A3B8"}
+                    size={20}
+                    style={styles.favIcon}
+                    onPress={() => handleToggleFavorite(match.homeTeam.id)}
+                  />
                 )}
               </View>
               <Text style={styles.teamName} numberOfLines={2}>{match.homeTeam.name}</Text>
@@ -178,6 +218,15 @@ export default function MatchDetailScreen() {
                     <Text style={styles.logoPlaceholderText}>{match.awayTeam.name.charAt(0)}</Text>
                   </View>
                 )}
+                {profile && (
+                  <IconButton
+                    icon={profile.favoriteTeams.includes(match.awayTeam.id) ? "heart" : "heart-outline"}
+                    iconColor={profile.favoriteTeams.includes(match.awayTeam.id) ? "#EF4444" : "#94A3B8"}
+                    size={20}
+                    style={styles.favIcon}
+                    onPress={() => handleToggleFavorite(match.awayTeam.id)}
+                  />
+                )}
               </View>
               <Text style={styles.teamName} numberOfLines={2}>{match.awayTeam.name}</Text>
             </View>
@@ -188,7 +237,7 @@ export default function MatchDetailScreen() {
         {prediction && (
           <Surface style={styles.sectionCard} elevation={1}>
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>🔮 AI Prediction</Text>
+              <Text style={styles.sectionTitle}>Dự đoán trận đấu</Text>
             </View>
 
             <View style={styles.predictionContent}>
@@ -214,13 +263,13 @@ export default function MatchDetailScreen() {
 
               <View style={styles.predictionResult}>
                 <View>
-                  <Text style={styles.predictionLabel}>Predicted Score</Text>
+                  <Text style={styles.predictionLabel}>Tỉ số dự đoán</Text>
                   <Text style={styles.predictedScoreValue}>
                     {prediction.predictedScore.home} - {prediction.predictedScore.away}
                   </Text>
                 </View>
                 <View>
-                  <Text style={styles.predictionLabel}>Confidence</Text>
+                  <Text style={styles.predictionLabel}>Độ tin cậy</Text>
                   <Text style={styles.confidenceValue}>
                     {(prediction.confidence * 100).toFixed(0)}%
                   </Text>
@@ -229,7 +278,7 @@ export default function MatchDetailScreen() {
 
               {prediction.explanation && (
                 <View style={styles.explanationContainer}>
-                  <Text style={styles.explanationTitle}>Analysis</Text>
+                  <Text style={styles.explanationTitle}>Phân tích</Text>
                   <Text style={styles.explanationText}>{prediction.explanation}</Text>
                 </View>
               )}
@@ -239,7 +288,7 @@ export default function MatchDetailScreen() {
 
         {/* Recent Form */}
         <Surface style={styles.sectionCard} elevation={1}>
-          <Text style={styles.sectionTitle}>📈 Recent Form</Text>
+          <Text style={styles.sectionTitle}>Phong độ gần đây (5 trận)</Text>
 
           <View style={styles.formContainer}>
             {/* Home Team */}
@@ -430,6 +479,13 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 24,
     fontWeight: 'bold',
+  },
+  favIcon: {
+    position: 'absolute',
+    top: -10,
+    right: -10,
+    backgroundColor: 'rgba(15, 23, 42, 0.8)',
+    margin: 0,
   },
   teamName: {
     color: '#fff',

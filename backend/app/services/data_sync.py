@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import List, Dict
 
 from app.db.models import Team, League, Match, TeamStats, Standing

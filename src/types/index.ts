@@ -116,7 +116,10 @@ export interface Injury {
 export interface UserProfile {
   id: string;
   email: string;
+  id: string;
+  email: string;
   name: string;
+  avatarUrl?: string;
   favoriteTeams: number[];
   favoriteLeagues: number[];
   followedMatches: number[];

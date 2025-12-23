@@ -9,22 +9,26 @@ import { useTheme } from 'react-native-paper';
 import HomeScreen from '../screens/HomeScreen';
 import MatchDetailScreen from '../screens/MatchDetailScreen';
 import StandingsScreen from '../screens/StandingsScreen';
+import NewsScreen from '../screens/NewsScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 import OnboardingScreen from '../screens/OnboardingScreen';
 import LoginScreen from '../screens/LoginScreen';
+import RegisterScreen from '../screens/RegisterScreen';
 
 export type RootStackParamList = {
   Main: undefined;
   MatchDetail: { matchId: number };
   Settings: undefined;
   Onboarding: undefined;
-  Login: undefined;
+  Login: { email?: string } | undefined;
+  Register: undefined;
 };
 
 export type MainTabParamList = {
   Home: undefined;
   Standings: undefined;
+  News: undefined;
   Profile: undefined;
 };
 
@@ -42,6 +46,8 @@ function MainTabs() {
             iconName = focused ? 'soccer' : 'soccer-field';
           } else if (route.name === 'Standings') {
             iconName = focused ? 'trophy' : 'trophy-outline';
+          } else if (route.name === 'News') {
+            iconName = focused ? 'newspaper-variant' : 'newspaper-variant-outline';
           } else if (route.name === 'Profile') {
             iconName = focused ? 'account' : 'account-outline';
           }
@@ -68,17 +74,22 @@ function MainTabs() {
       <Tab.Screen
         name="Home"
         component={HomeScreen}
-        options={{ title: 'Matches' }}
+        options={{ title: 'Trận đấu' }}
       />
       <Tab.Screen
         name="Standings"
         component={StandingsScreen}
-        options={{ title: 'Standings' }}
+        options={{ title: 'Bảng xếp hạng' }}
+      />
+      <Tab.Screen
+        name="News"
+        component={NewsScreen}
+        options={{ title: 'Tin tức' }}
       />
       <Tab.Screen
         name="Profile"
         component={ProfileScreen}
-        options={{ title: 'Profile' }}
+        options={{ title: 'Cá nhân' }}
       />
     </Tab.Navigator>
   );
@@ -108,6 +119,10 @@ export function AppNavigator() {
       <Stack.Screen
         name="Login"
         component={LoginScreen}
+      />
+      <Stack.Screen
+        name="Register"
+        component={RegisterScreen}
       />
     </Stack.Navigator>
   );

@@ -13,7 +13,11 @@ class User(Base):
     name = Column(String, nullable=False)
     hashed_password = Column(String, nullable=False)
     is_active = Column(Boolean, default=True)
+    is_superuser = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)
+    avatar_url = Column(String, nullable=True)
+    is_verified = Column(Boolean, default=False)
+    verification_token = Column(String, nullable=True)
     
     # Relationships
     favorite_teams = relationship("FavoriteTeam", back_populates="user")
@@ -152,3 +156,16 @@ class Standing(Base):
     # Relationships
     league = relationship("League")
     team = relationship("Team")
+
+
+class News(Base):
+    __tablename__ = "news"
+
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String, nullable=False)
+    summary = Column(String)
+    url = Column(String, unique=True, index=True)
+    image_url = Column(String)
+    source = Column(String)
+    published_at = Column(DateTime)
+    created_at = Column(DateTime, default=datetime.utcnow)

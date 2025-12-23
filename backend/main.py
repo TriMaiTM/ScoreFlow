@@ -5,6 +5,7 @@ import logging
 
 from app.core.config import settings
 from app.api.v1 import router as api_router
+from app.api.v1.endpoints import admin, users
 from app.db.database import engine, Base
 from app.services.cache import cache
 from app.core.scheduler import start_scheduler, stop_scheduler
@@ -17,9 +18,9 @@ async def lifespan(app: FastAPI):
     # Startup
     logger.info("🚀 Starting ScoreFlow API...")
     
-    # Create tables - DISABLED for Supabase Transaction Mode (tables already exist)
-    # async with engine.begin() as conn:
-    #     await conn.run_sync(Base.metadata.create_all)
+    # Create tables
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
     
     # Connect to Redis
     await cache.connect()
@@ -51,7 +52,14 @@ app = FastAPI(
 # CORS - Allow all origins for development
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins in development
+    allow_origins=[
+        "http://localhost:5173", 
+        "http://localhost:3000", 
+        "http://localhost:8081",
+        "exp://192.168.1.3:8081",
+        "http://192.168.1.3:8081",
+        "*"
+    ],  # Explicitly allow frontend
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -59,6 +67,18 @@ app.add_middleware(
 
 # Include routers
 app.include_router(api_router, prefix="/api/v1")
+app.include_router(admin.router, prefix="/api/v1/admin", tags=["admin"])
+app.include_router(users.router, prefix="/api/v1/users", tags=["users"])
+from app.api.v1.endpoints import news
+app.include_router(news.router, prefix="/api/v1/news", tags=["news"])
+
+from fastapi.staticfiles import StaticFiles
+import os
+
+if not os.path.exists("static"):
+    os.makedirs("static")
+    
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
 @app.api_route("/", methods=["GET", "HEAD"])

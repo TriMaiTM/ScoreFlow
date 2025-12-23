@@ -180,4 +180,26 @@ export class AuthService {
   static async logout(): Promise<ApiResponse<void>> {
     return apiClient.post<ApiResponse<void>>('/auth/logout');
   }
+
+  static async getMe(): Promise<ApiResponse<any>> {
+    return apiClient.get<ApiResponse<any>>('/auth/me');
+  }
+}
+
+export class UserService {
+  static async uploadAvatar(formData: FormData): Promise<ApiResponse<{ avatarUrl: string }>> {
+    return apiClient.post<ApiResponse<{ avatarUrl: string }>>('/users/me/avatar', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  }
+
+  static async addFavoriteTeam(teamId: number): Promise<ApiResponse<void>> {
+    return apiClient.post<ApiResponse<void>>(`/users/me/favorites/teams/${teamId}`);
+  }
+
+  static async removeFavoriteTeam(teamId: number): Promise<ApiResponse<void>> {
+    return apiClient.delete<ApiResponse<void>>(`/users/me/favorites/teams/${teamId}`);
+  }
 }

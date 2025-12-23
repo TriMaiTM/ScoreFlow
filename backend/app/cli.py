@@ -86,36 +86,37 @@ async def seed_full():
     # 1. Sync Leagues first
     await sync_leagues()
     
+    # Get all leagues
     async with AsyncSessionLocal() as db:
-        # Get all leagues
         from app.db.models import League
         result = await db.execute(select(League))
         leagues = result.scalars().all()
-        
-        print(f"📋 Found {len(leagues)} leagues to process...")
-        
-        for league in leagues:
-            league_id = league.external_id
-            print(f"\n⚽ Processing {league.name} (ID: {league_id})...")
-            try:
-                # Sync past 14 days
-                await seed_past_matches(league_id, days_back=14)
-                
-                # Sync upcoming 14 days
-                await sync_matches(league_id, days=14)
-                
-                # Sync standings
-                await sync_standings(league_id)
-                
-            except Exception as e:
-                print(f"⚠️  Error processing league {league_id}: {e}")
+        league_ids = [(league.external_id, league.name) for league in leagues]
+    
+    print(f"📋 Found {len(league_ids)} leagues to process...")
+    
+    # Process each league with fresh connection
+    for league_id, league_name in league_ids:
+        print(f"\n⚽ Processing {league_name} (ID: {league_id})...")
+        try:
+            # Sync past 14 days
+            await seed_past_matches(league_id, days_back=14)
             
-            # Rate limit: Free tier allows 10 req/min (1 req every 6s)
-            # We make 3 requests per league (3 * 6s = 18s required)
-            # Adding extra buffer to be safe
-            print("⏳ Waiting 25s to respect rate limit (Free tier: 10 req/min)...")
-            await asyncio.sleep(20)
+            # Sync upcoming 14 days
+            await sync_matches(league_id, days=14)
             
+            # Sync standings
+            await sync_standings(league_id)
+            
+        except Exception as e:
+            print(f"⚠️  Error processing league {league_id}: {e}")
+        
+        # Rate limit: Free tier allows 10 req/min (1 req every 6s)
+        # We make 3 requests per league (3 * 6s = 18s required)
+        # Adding extra buffer to be safe
+        print("⏳ Waiting 20s to respect rate limit (Free tier: 10 req/min)...")
+        await asyncio.sleep(20)
+        
     print("\n✅ Full seed completed successfully!")
 
 

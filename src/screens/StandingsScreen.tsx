@@ -45,7 +45,7 @@ export default function StandingsScreen() {
 
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Standings</Text>
+        <Text style={styles.headerTitle}>Bảng xếp hạng</Text>
       </View>
 
       {/* League Selector */}
@@ -57,7 +57,7 @@ export default function StandingsScreen() {
             <TouchableOpacity onPress={openMenu}>
               <Surface style={styles.pickerWrapper} elevation={2}>
                 <Text style={styles.pickerText}>
-                  {selectedLeague ? selectedLeague.name : 'Select League'}
+                  {selectedLeague ? selectedLeague.name : 'Chọn giải đấu'}
                 </Text>
                 <Icon name="chevron-down" size={24} color="#fff" />
               </Surface>
