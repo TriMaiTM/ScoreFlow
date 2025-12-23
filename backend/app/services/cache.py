@@ -13,23 +13,10 @@ class RedisCache:
         self.redis_client: Optional[redis.Redis] = None
     
     async def connect(self):
-        """Connect to Redis"""
-        try:
-            self.redis_client = await redis.from_url(
-                settings.REDIS_URL,
-                encoding="utf-8",
-                decode_responses=True,
-                socket_connect_timeout=2,  # Short timeout to fail fast
-                socket_timeout=2
-            )
-            # Test connection with explicit timeout
-            import asyncio
-            async with asyncio.timeout(3):
-                await self.redis_client.ping()
-            print("✅ Connected to Redis")
-        except Exception as e:
-            print(f"⚠️ Redis connection failed: {e}. Caching disabled.")
-            self.redis_client = None
+        """Connect to Redis - DISABLED FOR DEBUGGING"""
+        print("⚠️ Redis disabled for debugging/performance.")
+        self.redis_client = None
+        return
     
     async def disconnect(self):
         """Disconnect from Redis"""

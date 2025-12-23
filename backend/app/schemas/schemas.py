@@ -1,19 +1,41 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
 from typing import Optional, List
 from datetime import datetime
 
 
 class UserCreate(BaseModel):
-    email: EmailStr
+    email: str
     name: str
     password: str
 
+
+class UserLogin(BaseModel):
+    email: str
+    password: str
+
+
+class NotificationSettings(BaseModel):
+    enabled: bool = True
+    matchStart: bool = True
+    goals: bool = True
+    matchEnd: bool = True
+    favoriteTeamsOnly: bool = False
+
+class UserProfile(BaseModel):
+    id: str  # Frontend expects string ID
+    email: str
+    name: str
+    favoriteTeams: List[int] = []
+    favoriteLeagues: List[int] = []
+    followedMatches: List[int] = []
+    notificationSettings: NotificationSettings = NotificationSettings()
 
 class UserResponse(BaseModel):
     id: int
     email: str
     name: str
     is_active: bool
+    is_superuser: bool = False
     
     class Config:
         from_attributes = True

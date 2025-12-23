@@ -209,6 +209,21 @@ async def sync_upcoming_matches_job():
         logger.error(f"❌ Error syncing upcoming matches: {e}")
 
 
+async def sync_news_job():
+    """Job to fetch latest football news from RSS feeds"""
+    try:
+        logger.info("📰 Running scheduled job: sync_news")
+        async with AsyncSessionLocal() as db:
+            from app.services.news_service import NewsService
+            service = NewsService(db)
+            
+            count = await service.fetch_and_save_news()
+            logger.info(f"✅ News sync complete: {count} new articles")
+            
+    except Exception as e:
+        logger.error(f"❌ Error syncing news: {e}")
+
+
 def start_scheduler():
     """Start the background scheduler"""
     
@@ -248,12 +263,21 @@ def start_scheduler():
         replace_existing=True
     )
     
+    scheduler.add_job(
+        sync_news_job,
+        trigger=IntervalTrigger(minutes=30),
+        id="sync_news",
+        name="Sync football news",
+        replace_existing=True
+    )
+
     scheduler.start()
     logger.info("📅 Scheduler started successfully")
     logger.info("  - Monthly seed (2 weeks ± today): Daily at midnight")
     logger.info("  - Real-time scores: Every 5 minutes")
     logger.info("  - Standings: Twice daily (6 AM, 6 PM)")
     logger.info("  - Upcoming matches: Every 6 hours")
+    logger.info("  - News: Every 30 minutes")
 
 
 def stop_scheduler():

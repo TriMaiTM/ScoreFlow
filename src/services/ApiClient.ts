@@ -4,8 +4,11 @@ import { Platform } from 'react-native';
 
 // TODO: Thay YOUR_IP bằng IP máy của bạn (chạy: ipconfig)
 // Ví dụ: 'http://192.168.1.100:8000/api/v1'
+// TODO: Thay YOUR_IP bằng IP máy của bạn (chạy: ipconfig) ở dòng dưới
+// Ví dụ: const API_BASE_URL = 'http://192.168.1.5:8000/api/v1';
+// Production Render URL
 const API_BASE_URL = 'https://scoreflow-backend-5wu8.onrender.com/api/v1';
-const API_TIMEOUT = 30000;
+const API_TIMEOUT = 15000; // Tăng timeout cho production
 
 class ApiClient {
   private client: AxiosInstance;

@@ -1,3 +1,11 @@
+import os
+from dotenv import load_dotenv
+
+# Load env before imports
+load_dotenv("backend/.env")
+if not os.getenv("DATABASE_URL"):
+    load_dotenv(r"d:\HK7\DACN2\ScoreFlow\backend\.env")
+
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
@@ -7,12 +15,12 @@ import joblib
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from xgboost import XGBClassifier
-from lightgbm import LGBMClassifier
+# from lightgbm import LGBMClassifier
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 import asyncio
 from pathlib import Path
 
-from app.db.database import async_session
+from app.db.database import AsyncSessionLocal
 from app.db.models import Match, Team, TeamStats
 from app.ml.feature_engineering import FeatureEngineer
 
@@ -28,7 +36,7 @@ class ModelTrainer:
         """Prepare training data from database"""
         print("📊 Preparing training data...")
         
-        async with async_session() as db:
+        async with AsyncSessionLocal() as db:
             # Get finished matches
             query = select(Match).where(Match.status == "finished")
             
@@ -182,4 +190,7 @@ async def main():
 
 
 if __name__ == "__main__":
+    import sys
+    if sys.platform == 'win32':
+        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
     asyncio.run(main())
