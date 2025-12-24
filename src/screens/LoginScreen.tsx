@@ -14,6 +14,7 @@ export default function LoginScreen() {
   const route = useRoute<any>();
   const [email, setEmail] = useState(route.params?.email || '');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const navigation = useNavigation<any>();
@@ -95,7 +96,8 @@ export default function LoginScreen() {
               onChangeText={setPassword}
               mode="outlined"
               style={styles.input}
-              secureTextEntry
+              secureTextEntry={!showPassword}
+              right={<TextInput.Icon icon={showPassword ? "eye-off" : "eye"} onPress={() => setShowPassword(!showPassword)} forceTextInputFocus={false} />}
               textColor="#fff"
               theme={{
                 colors: {

@@ -20,6 +20,8 @@ export default function RegisterScreen() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
@@ -121,7 +123,8 @@ export default function RegisterScreen() {
                             onChangeText={setPassword}
                             mode="outlined"
                             style={styles.input}
-                            secureTextEntry
+                            secureTextEntry={!showPassword}
+                            right={<TextInput.Icon icon={showPassword ? "eye-off" : "eye"} onPress={() => setShowPassword(!showPassword)} forceTextInputFocus={false} />}
                             textColor="#fff"
                             theme={{
                                 colors: {
@@ -139,7 +142,8 @@ export default function RegisterScreen() {
                             onChangeText={setConfirmPassword}
                             mode="outlined"
                             style={styles.input}
-                            secureTextEntry
+                            secureTextEntry={!showConfirmPassword}
+                            right={<TextInput.Icon icon={showConfirmPassword ? "eye-off" : "eye"} onPress={() => setShowConfirmPassword(!showConfirmPassword)} forceTextInputFocus={false} />}
                             textColor="#fff"
                             theme={{
                                 colors: {
