@@ -8,11 +8,16 @@ from apscheduler.triggers.interval import IntervalTrigger
 from apscheduler.triggers.cron import CronTrigger
 from datetime import datetime, date, timedelta
 import logging
+import asyncio
 
 from app.db.database import AsyncSessionLocal
 from app.services.data_sync import DataSyncService
 
 logger = logging.getLogger(__name__)
+
+# Limit max concurrent jobs to 2
+MAX_CONCURRENT_JOBS = 2
+job_semaphore = asyncio.Semaphore(MAX_CONCURRENT_JOBS)
 
 scheduler = AsyncIOScheduler()
 
@@ -22,44 +27,44 @@ async def seed_monthly_matches_job():
     Runs daily at midnight to ensure fresh data
     """
     try:
-        logger.info("🌱 Running scheduled job: seed_monthly_matches")
-        async with AsyncSessionLocal() as db:
-            service = DataSyncService(db)
-            
-            # Calculate date range: 14 days before + 14 days after = 28 days
-            today = date.today()
-            date_from = (today - timedelta(days=14)).strftime("%Y-%m-%d")
-            date_to = (today + timedelta(days=14)).strftime("%Y-%m-%d")
-            
-            logger.info(f"📅 Seeding matches from {date_from} to {date_to}")
-            
-            # Get ALL leagues from DB
-            from sqlalchemy import select
-            from app.db.models import League
-            result = await db.execute(select(League))
-            leagues = result.scalars().all()
-            
-            logger.info(f"📋 Processing {len(leagues)} leagues...")
-            
-            total_synced = 0
-            for league in leagues:
-                try:
-                    count = await service.sync_matches_date_range(
-                        league_id=league.external_id,
-                        date_from=date_from,
-                        date_to=date_to
-                    )
-                    total_synced += count
-                    logger.info(f"  ✅ {league.name}: {count} matches")
-                    
-                    # Rate limit: 10 req/min -> 1 req every 6s (now 20s for safety)
-                    import asyncio
-                    await asyncio.sleep(20)
-                    
-                except Exception as e:
-                    logger.error(f"  ❌ {league.name} failed: {e}")
-            
-            logger.info(f"✅ Total seeded: {total_synced} matches for 1 month")
+        async with job_semaphore:
+            logger.info("🌱 Running scheduled job: seed_monthly_matches")
+            async with AsyncSessionLocal() as db:
+                service = DataSyncService(db)
+                
+                # Calculate date range: 14 days before + 14 days after = 28 days
+                today = date.today()
+                date_from = (today - timedelta(days=14)).strftime("%Y-%m-%d")
+                date_to = (today + timedelta(days=14)).strftime("%Y-%m-%d")
+                
+                logger.info(f"📅 Seeding matches from {date_from} to {date_to}")
+                
+                # Get ALL leagues from DB
+                from sqlalchemy import select
+                from app.db.models import League
+                result = await db.execute(select(League))
+                leagues = result.scalars().all()
+                
+                logger.info(f"📋 Processing {len(leagues)} leagues...")
+                
+                total_synced = 0
+                for league in leagues:
+                    try:
+                        count = await service.sync_matches_date_range(
+                            league_id=league.external_id,
+                            date_from=date_from,
+                            date_to=date_to
+                        )
+                        total_synced += count
+                        logger.info(f"  ✅ {league.name}: {count} matches")
+                        
+                        # Rate limit: 10 req/min -> 1 req every 6s (now 20s for safety)
+                        await asyncio.sleep(20)
+                        
+                    except Exception as e:
+                        logger.error(f"  ❌ {league.name} failed: {e}")
+                
+                logger.info(f"✅ Total seeded: {total_synced} matches for 1 month")
     except Exception as e:
         logger.error(f"❌ Error seeding monthly matches: {e}")
 
@@ -69,51 +74,51 @@ async def sync_realtime_scores_job():
     Runs every 5 minutes to keep scores up-to-date
     """
     try:
-        logger.info("🔄 Running scheduled job: sync_realtime_scores")
-        async with AsyncSessionLocal() as db:
-            service = DataSyncService(db)
-            
-            # Sync yesterday, today, and tomorrow to catch all recent/ongoing matches
-            today = date.today()
-            date_from = (today - timedelta(days=1)).strftime("%Y-%m-%d")
-            date_to = (today + timedelta(days=1)).strftime("%Y-%m-%d")
-            
-            # Get leagues that have matches in this date range
-            from sqlalchemy import select
-            from app.db.models import Match, League
-            
-            # Query: Select distinct league external_ids that have matches in range
-            result = await db.execute(
-                select(League.external_id)
-                .join(Match)
-                .where(
-                    Match.match_date >= datetime.strptime(date_from, "%Y-%m-%d"),
-                    Match.match_date < datetime.strptime(date_to, "%Y-%m-%d") + timedelta(days=1)
-                )
-                .distinct()
-            )
-            active_leagues = result.scalars().all()
-            
-            logger.info(f"🎯 Syncing {len(active_leagues)} active leagues: {active_leagues}")
-            
-            total_updated = 0
-            for league_id in active_leagues:
-                try:
-                    count = await service.sync_matches_date_range(
-                        league_id=league_id,
-                        date_from=date_from,
-                        date_to=date_to
+        async with job_semaphore:
+            logger.info("🔄 Running scheduled job: sync_realtime_scores")
+            async with AsyncSessionLocal() as db:
+                service = DataSyncService(db)
+                
+                # Sync yesterday, today, and tomorrow to catch all recent/ongoing matches
+                today = date.today()
+                date_from = (today - timedelta(days=1)).strftime("%Y-%m-%d")
+                date_to = (today + timedelta(days=1)).strftime("%Y-%m-%d")
+                
+                # Get leagues that have matches in this date range
+                from sqlalchemy import select
+                from app.db.models import Match, League
+                
+                # Query: Select distinct league external_ids that have matches in range
+                result = await db.execute(
+                    select(League.external_id)
+                    .join(Match)
+                    .where(
+                        Match.match_date >= datetime.strptime(date_from, "%Y-%m-%d"),
+                        Match.match_date < datetime.strptime(date_to, "%Y-%m-%d") + timedelta(days=1)
                     )
-                    total_updated += count
-                    
-                    # Rate limit: Sleep 20s between leagues to avoid 429
-                    import asyncio
-                    await asyncio.sleep(20)
-                    
-                except Exception as e:
-                    logger.error(f"  ❌ League {league_id} failed: {e}")
-            
-            logger.info(f"✅ Updated {total_updated} matches (real-time)")
+                    .distinct()
+                )
+                active_leagues = result.scalars().all()
+                
+                logger.info(f"🎯 Syncing {len(active_leagues)} active leagues: {active_leagues}")
+                
+                total_updated = 0
+                for league_id in active_leagues:
+                    try:
+                        count = await service.sync_matches_date_range(
+                            league_id=league_id,
+                            date_from=date_from,
+                            date_to=date_to
+                        )
+                        total_updated += count
+                        
+                        # Rate limit: Sleep 20s between leagues to avoid 429
+                        await asyncio.sleep(20)
+                        
+                    except Exception as e:
+                        logger.error(f"  ❌ League {league_id} failed: {e}")
+                
+                logger.info(f"✅ Updated {total_updated} matches (real-time)")
     except Exception as e:
         logger.error(f"❌ Error syncing real-time scores: {e}")
 
@@ -121,31 +126,31 @@ async def sync_realtime_scores_job():
 async def sync_today_matches_job():
     """Job to sync today's matches for ALL leagues"""
     try:
-        logger.info("🔄 Running scheduled job: sync_today_matches")
-        async with AsyncSessionLocal() as db:
-            service = DataSyncService(db)
-            
-            # Get ALL leagues
-            from sqlalchemy import select
-            from app.db.models import League
-            result = await db.execute(select(League))
-            leagues = result.scalars().all()
-            
-            total_synced = 0
-            for league in leagues:
-                try:
-                    count = await service.sync_matches(league.external_id, days_ahead=1)
-                    total_synced += count
-                    logger.info(f"  ✅ {league.name}: {count} matches")
-                    
-                    # Rate limit
-                    import asyncio
-                    await asyncio.sleep(20)
-                    
-                except Exception as e:
-                    logger.error(f"  ❌ {league.name} failed: {e}")
-            
-            logger.info(f"✅ Total synced: {total_synced} matches")
+        async with job_semaphore:
+            logger.info("🔄 Running scheduled job: sync_today_matches")
+            async with AsyncSessionLocal() as db:
+                service = DataSyncService(db)
+                
+                # Get ALL leagues
+                from sqlalchemy import select
+                from app.db.models import League
+                result = await db.execute(select(League))
+                leagues = result.scalars().all()
+                
+                total_synced = 0
+                for league in leagues:
+                    try:
+                        count = await service.sync_matches(league.external_id, days_ahead=1)
+                        total_synced += count
+                        logger.info(f"  ✅ {league.name}: {count} matches")
+                        
+                        # Rate limit
+                        await asyncio.sleep(20)
+                        
+                    except Exception as e:
+                        logger.error(f"  ❌ {league.name} failed: {e}")
+                
+                logger.info(f"✅ Total synced: {total_synced} matches")
     except Exception as e:
         logger.error(f"❌ Error syncing today's matches: {e}")
 
@@ -153,27 +158,27 @@ async def sync_today_matches_job():
 async def sync_standings_job():
     """Job to sync league standings/tables"""
     try:
-        logger.info("🔄 Running scheduled job: sync_standings")
-        async with AsyncSessionLocal() as db:
-            service = DataSyncService(db)
-            
-            # Get ALL leagues
-            from sqlalchemy import select
-            from app.db.models import League
-            result = await db.execute(select(League))
-            leagues = result.scalars().all()
-            
-            for league in leagues:
-                try:
-                    count = await service.sync_standings(league.external_id)
-                    logger.info(f"  ✅ {league.name}: {count} teams")
-                    
-                    # Rate limit
-                    import asyncio
-                    await asyncio.sleep(20)
-                    
-                except Exception as e:
-                    logger.error(f"  ❌ {league.name} failed: {e}")
+        async with job_semaphore:
+            logger.info("🔄 Running scheduled job: sync_standings")
+            async with AsyncSessionLocal() as db:
+                service = DataSyncService(db)
+                
+                # Get ALL leagues
+                from sqlalchemy import select
+                from app.db.models import League
+                result = await db.execute(select(League))
+                leagues = result.scalars().all()
+                
+                for league in leagues:
+                    try:
+                        count = await service.sync_standings(league.external_id)
+                        logger.info(f"  ✅ {league.name}: {count} teams")
+                        
+                        # Rate limit
+                        await asyncio.sleep(20)
+                        
+                    except Exception as e:
+                        logger.error(f"  ❌ {league.name} failed: {e}")
     except Exception as e:
         logger.error(f"❌ Error syncing standings: {e}")
 
@@ -181,30 +186,30 @@ async def sync_standings_job():
 async def sync_upcoming_matches_job():
     """Job to sync upcoming matches (next 7 days)"""
     try:
-        logger.info("🔄 Running scheduled job: sync_upcoming_matches")
-        async with AsyncSessionLocal() as db:
-            service = DataSyncService(db)
-            
-            # Get ALL leagues
-            from sqlalchemy import select
-            from app.db.models import League
-            result = await db.execute(select(League))
-            leagues = result.scalars().all()
-            
-            total_synced = 0
-            for league in leagues:
-                try:
-                    count = await service.sync_matches(league.external_id, days_ahead=7)
-                    total_synced += count
-                    
-                    # Rate limit
-                    import asyncio
-                    await asyncio.sleep(20)
-                    
-                except Exception as e:
-                    logger.error(f"  ❌ {league.name} failed: {e}")
-            
-            logger.info(f"✅ Total synced: {total_synced} upcoming matches")
+        async with job_semaphore:
+            logger.info("🔄 Running scheduled job: sync_upcoming_matches")
+            async with AsyncSessionLocal() as db:
+                service = DataSyncService(db)
+                
+                # Get ALL leagues
+                from sqlalchemy import select
+                from app.db.models import League
+                result = await db.execute(select(League))
+                leagues = result.scalars().all()
+                
+                total_synced = 0
+                for league in leagues:
+                    try:
+                        count = await service.sync_matches(league.external_id, days_ahead=7)
+                        total_synced += count
+                        
+                        # Rate limit
+                        await asyncio.sleep(20)
+                        
+                    except Exception as e:
+                        logger.error(f"  ❌ {league.name} failed: {e}")
+                
+                logger.info(f"✅ Total synced: {total_synced} upcoming matches")
     except Exception as e:
         logger.error(f"❌ Error syncing upcoming matches: {e}")
 
@@ -212,13 +217,14 @@ async def sync_upcoming_matches_job():
 async def sync_news_job():
     """Job to fetch latest football news from RSS feeds"""
     try:
-        logger.info("📰 Running scheduled job: sync_news")
-        async with AsyncSessionLocal() as db:
-            from app.services.news_service import NewsService
-            service = NewsService(db)
-            
-            count = await service.fetch_and_save_news()
-            logger.info(f"✅ News sync complete: {count} new articles")
+        async with job_semaphore:
+            logger.info("📰 Running scheduled job: sync_news")
+            async with AsyncSessionLocal() as db:
+                from app.services.news_service import NewsService
+                service = NewsService(db)
+                
+                count = await service.fetch_and_save_news()
+                logger.info(f"✅ News sync complete: {count} new articles")
             
     except Exception as e:
         logger.error(f"❌ Error syncing news: {e}")
@@ -263,6 +269,7 @@ def start_scheduler():
         replace_existing=True
     )
     
+    # Sync news every 30 minutes
     scheduler.add_job(
         sync_news_job,
         trigger=IntervalTrigger(minutes=30),
