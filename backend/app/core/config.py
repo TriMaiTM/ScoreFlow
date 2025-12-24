@@ -8,13 +8,21 @@ class Settings(BaseSettings):
     DATABASE_URL: str
     DATABASE_URL_ASYNC: str
     
+    DB_POOL_SIZE: int = 5                    # Số connections mở sẵn
+    DB_MAX_OVERFLOW: int = 2                # Tối đa thêm 10 connections
+    DB_POOL_TIMEOUT: int = 30                # Đợi 30s nếu pool đầy
+    DB_POOL_RECYCLE: int = 3600              # Recycle connections sau 1 giờ
+    DB_POOL_PRE_PING: bool = True     
+    DB_CONNECT_TIMEOUT: int = 120  # 🆕 Tăng lên 120s cho Render cold start
+    DB_COMMAND_TIMEOUT: int = 120       # Kiểm tra connection trước khi dùng
+
     # Redis
     REDIS_URL: str = "redis://localhost:6379/0"
     
     # JWT
     SECRET_KEY: str
     ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 43200  # 30 days
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 4320  # 30 days
     
     # Football-Data.org API
     FOOTBALL_API_KEY: str

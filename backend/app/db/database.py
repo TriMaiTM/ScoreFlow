@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import declarative_base
-from sqlalchemy.pool import NullPool
+from sqlalchemy.pool import QueuePool
 
 from app.core.config import settings
 
@@ -32,10 +32,15 @@ else:
     print("🔓 SSL Context: Disabled")
 
 engine = create_async_engine(
-    settings.DATABASE_URL_ASYNC,
+    settings. DATABASE_URL_ASYNC,
     echo=False,
     future=True,
-    poolclass=NullPool,
+    poolclass=QueuePool,                          # ✅ Đổi từ NullPool
+    pool_size=settings.DB_POOL_SIZE,              # 5 connections
+    max_overflow=settings.DB_MAX_OVERFLOW,        # Tối đa +10
+    pool_timeout=settings.DB_POOL_TIMEOUT,        # Đợi 30s
+    pool_recycle=settings.DB_POOL_RECYCLE,        # Recycle sau 1 giờ
+    pool_pre_ping=settings.DB_POOL_PRE_PING,      # Kiểm tra trước khi dùng
     connect_args=connect_args
 )
 
