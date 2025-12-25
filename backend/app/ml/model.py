@@ -130,7 +130,7 @@ class PredictionModel:
         }
 
     def generate_explanation(self, home_team: str, away_team: str, home_prob: float, away_prob: float, features: list) -> str:
-        """Generate a natural language explanation for the prediction (Vietnamese)"""
+        """Generate a natural language explanation for the prediction"""
         # Feature order: 
         # 0:HomeElo, 1:AwayElo, 2:EloDiff, 3:HomeForm, 4:AwayForm, 
         # 5:HomeGS, 6:AwayGS, 7:HomeGC, 8:AwayGC, 9:HomeRest, 10:AwayRest, 11:EloDiffAbs
@@ -147,46 +147,46 @@ class PredictionModel:
         
         # 1. Main Verdict based on Probability
         if home_prob > 0.65:
-            explanation.append(f"**{home_team}** đang là ứng cử viên sáng giá cho chiến thắng.")
+            explanation.append(f"**{home_team}** is the dominant favorite to win.")
         elif home_prob > 0.50:
-            explanation.append(f"**{home_team}** có lợi thế rất lớn, đặc biệt là khi được thi đấu trên sân nhà.")
+            explanation.append(f"**{home_team}** has a solid advantage, especially playing at home.")
         elif away_prob > 0.65:
-            explanation.append(f"**{away_team}** được đánh giá rất cao cho chiến thắng dù phải làm khách.")
+            explanation.append(f"**{away_team}** is heavily favored to win despite playing away.")
         elif away_prob > 0.50:
-            explanation.append(f"**{away_team}** có phần nhỉnh hơn trong cặp đấu này.")
+            explanation.append(f"**{away_team}** holds the edge in this matchup.")
         else:
-            explanation.append("Đây là một trận đấu rất cân bằng và khó đoán.")
+            explanation.append("This is a highly competitive match that could go either way.")
             if abs(home_prob - away_prob) < 0.05:
-                explanation.append("Khả năng hòa là rất cao.")
+                explanation.append("A draw is a very strong possibility.")
 
         # 2. Form & Elo Context
         if elo_diff > 100:
             if home_form > away_form:
-                explanation.append(f"Với đẳng cấp vượt trội và phong độ tốt hơn, rất khó để đánh bại {home_team} lúc này.")
+                explanation.append(f"With superior quality and better recent form, {home_team} looks difficult to beat.")
             elif home_form < away_form:
-                explanation.append(f"Dù {home_team} được đánh giá cao hơn trên lý thuyết, nhưng phong độ tốt của {away_team} có thể tạo nên bất ngờ.")
+                explanation.append(f"Although {home_team} is rated higher on paper, {away_team}'s better recent form could make this tricky.")
         elif elo_diff < -100:
             if away_form > home_form:
-                explanation.append(f"{away_team} sở hữu đội hình mạnh hơn và đang có đà hưng phấn.")
+                explanation.append(f"{away_team} boasts both a stronger squad and better momentum.")
             elif away_form < home_form:
-                explanation.append(f"{home_team} bị đánh giá thấp hơn nhưng những màn trình diễn gần đây cho thấy họ hoàn toàn có cơ hội.")
+                explanation.append(f"{home_team} is technically the underdog but their recent performances give them a fighting chance.")
         else:
             # Close Elo
             if home_form > away_form + 0.5:
-                explanation.append(f"{home_team} bước vào trận đấu với phong độ tốt hơn hẳn đối thủ.")
+                explanation.append(f"{home_team} enters the match in much better shape than their opponents.")
             elif away_form > home_form + 0.5:
-                explanation.append(f"{away_team} đến làm khách với phong độ vượt trội so với đội chủ nhà.")
+                explanation.append(f"{away_team} arrives in superior form compared to the hosts.")
 
         # 3. Tactical / Stats Insight
         avg_goals = (home_gs + away_gs) / 2
         avg_conceded = (home_gc + away_gc) / 2
         
         if avg_goals > 1.8:
-            explanation.append("Hứa hẹn sẽ có nhiều bàn thắng, khi cả hai đội đều có hàng công mạnh.")
+            explanation.append("Expect goals in this one, as both sides have potent attacks.")
         elif avg_conceded < 0.8:
-            explanation.append("Đây có thể là một trận đấu chặt chẽ, nặng về chiến thuật và ít bàn thắng.")
+            explanation.append("This could be a tight, low-scoring tactical battle.")
         elif home_gs > 2.0 and away_gc > 1.5:
-            explanation.append(f"Hàng công của {home_team} sẽ có nhiều cơ hội trước hàng thủ lỏng lẻo của {away_team}.")
+            explanation.append(f"{home_team}'s attack should find plenty of chances against {away_team}'s leaky defense.")
             
         return " ".join(explanation)
 
