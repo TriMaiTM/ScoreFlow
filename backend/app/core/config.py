@@ -8,20 +8,14 @@ class Settings(BaseSettings):
     DATABASE_URL: str
     DATABASE_URL_ASYNC: str
     
-    DB_POOL_SIZE: int = 3                    # Số connections mở sẵn
-    DB_MAX_OVERFLOW: int = 7                # Tối đa thêm 10 connections
+    DB_POOL_SIZE: int = 5                    # Số connections mở sẵn
+    DB_MAX_OVERFLOW: int = 2                # Tối đa thêm 10 connections
     DB_POOL_TIMEOUT: int = 30                # Đợi 30s nếu pool đầy
     DB_POOL_RECYCLE: int = 3600              # Recycle connections sau 1 giờ
     DB_POOL_PRE_PING: bool = True     
     DB_CONNECT_TIMEOUT: int = 120  # 🆕 Tăng lên 120s cho Render cold start
     DB_COMMAND_TIMEOUT: int = 120       # Kiểm tra connection trước khi dùng
 
-    # 🆕 Scheduler Optimization
-    SCHEDULER_API_DELAY: int = 60
-    SCHEDULER_MAX_CONCURRENT_JOBS: int = 2
-    SCHEDULER_REALTIME_INTERVAL: int = 10
-    SCHEDULER_NEWS_INTERVAL: int = 60
-    
     # Redis
     REDIS_URL: str = "redis://localhost:6379/0"
     
