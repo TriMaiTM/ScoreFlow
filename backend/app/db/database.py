@@ -1,6 +1,5 @@
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import declarative_base
-from sqlalchemy.pool import QueuePool
 
 from app.core.config import settings
 
@@ -17,8 +16,8 @@ connect_args = {
     "server_settings": {
         "jit": "off",
     },
-    "timeout": 60,          # Increase connection timeout to 60s (for Render cold starts)
-    "command_timeout": 60,  # Increase query timeout to 60s
+    "timeout": settings.DB_CONNECT_TIMEOUT,     
+    "command_timeout": settings.DB_COMMAND_TIMEOUT,
 }
 
 if use_ssl:
@@ -35,7 +34,6 @@ engine = create_async_engine(
     settings. DATABASE_URL_ASYNC,
     echo=False,
     future=True,
-    poolclass=QueuePool,                          # ✅ Đổi từ NullPool
     pool_size=settings.DB_POOL_SIZE,              # 5 connections
     max_overflow=settings.DB_MAX_OVERFLOW,        # Tối đa +10
     pool_timeout=settings.DB_POOL_TIMEOUT,        # Đợi 30s

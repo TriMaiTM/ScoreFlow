@@ -480,13 +480,13 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingTop: Platform.OS === 'android' ? 10 : 20, // Reduced padding
+    paddingTop: Platform.OS === 'android' ? 45 : 20, // Increased padding for status bar
     paddingBottom: 10,
-    zIndex: 10, // Ensure header is above content for popup context if needed
+    zIndex: 10,
   },
   logo: {
-    width: 200, // Increased size
-    height: 60,
+    width: 140, // Reduced size
+    height: 40,
   },
   iconButton: {
     position: 'relative',
