@@ -35,7 +35,10 @@ engine = create_async_engine(
     settings.DATABASE_URL_ASYNC,
     echo=False,
     future=True,
-    poolclass=NullPool,
+    pool_pre_ping=True,  # Check connection liveness before using
+    pool_size=40,  
+    pool_recycle=1800,      # Keep 10 connections open
+    max_overflow=40,     # Allow 20 more temporary connections
     connect_args=connect_args
 )
 
